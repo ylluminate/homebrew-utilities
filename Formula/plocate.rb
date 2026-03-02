@@ -30,19 +30,25 @@ class Plocate < Formula
   def caveats
     <<~EOS
       Build the initial database (requires sudo):
-        sudo #{sbin}/updatedb
+        sudo #{sbin}/updatedb --require-visibility no
+
+      Then search:
+        #{bin}/plocate <pattern>
+
+      For automatic daily updates:
+        sudo brew services start #{name}
 
       To configure exclusions, edit:
         #{etc}/updatedb.conf
 
       External volumes are excluded by default. To index a specific volume:
-        sudo #{sbin}/updatedb -U /Volumes/MyDrive -o #{var}/lib/plocate/myvolume.db
+        sudo #{sbin}/updatedb -U /Volumes/MyDrive -o #{var}/lib/plocate/myvolume.db --require-visibility no
         #{bin}/plocate -d #{var}/lib/plocate/myvolume.db <pattern>
     EOS
   end
 
   service do
-    run [opt_sbin/"updatedb", "--output", var/"lib/plocate/plocate.db"]
+    run [opt_sbin/"updatedb", "--require-visibility", "no", "--output", var/"lib/plocate/plocate.db"]
     run_type :interval
     interval 86400
     require_root true
