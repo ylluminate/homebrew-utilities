@@ -49,8 +49,13 @@ class Plocate < Formula
         locate <pattern>
 
       If you have findutils installed, its 'glocate' stays in bin/ and
-      does not conflict. Verify which locate you are using with:
+      does not conflict. However, if you added findutils' gnubin to your
+      PATH, its 'locate' may shadow this one. Check with:
         which locate
+
+      If it points to gnubin/locate instead of #{bin}/locate, add this
+      to your ~/.zshrc (after the line that adds gnubin to PATH):
+        alias locate='#{bin}/plocate'
 
       For automatic daily updates:
         sudo brew services start #{name}
