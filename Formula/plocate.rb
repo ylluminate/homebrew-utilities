@@ -14,7 +14,7 @@ class Plocate < Formula
     args = %W[
       -Dinstall_systemd=false
       -Dinstall_cron=false
-      -Ddbpath=plocate/plocate.db
+      -Ddbpath=#{var}/lib/plocate/plocate.db
       -Dconfpath=#{etc}/updatedb.conf
     ]
 
