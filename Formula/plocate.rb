@@ -32,6 +32,11 @@ class Plocate < Formula
       Build the initial database (requires sudo):
         sudo #{sbin}/updatedb --require-visibility no
 
+      --require-visibility no skips per-user file permission checks. This is
+      the right default for personal Macs (single user). On shared multi-user
+      machines, omit this flag and create a _plocate group instead so each
+      user only sees files they have access to.
+
       Then search:
         #{bin}/plocate <pattern>
 
