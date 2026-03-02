@@ -24,6 +24,11 @@ class Plocate < Formula
 
     etc.install "updatedb.conf.darwin" => "updatedb.conf" unless (etc/"updatedb.conf").exist?
 
+    # 'locate' symlink so plocate works as a drop-in replacement.
+    # Does not conflict with findutils, which installs 'glocate' in
+    # bin/ and only provides 'locate' inside libexec/gnubin/.
+    bin.install_symlink "plocate" => "locate"
+
     (var/"lib/plocate").mkpath
   end
 
@@ -39,6 +44,13 @@ class Plocate < Formula
 
       Then search:
         #{bin}/plocate <pattern>
+
+      A 'locate' symlink is provided so you can also use:
+        locate <pattern>
+
+      If you have findutils installed, its 'glocate' stays in bin/ and
+      does not conflict. Verify which locate you are using with:
+        which locate
 
       For automatic daily updates:
         sudo brew services start #{name}

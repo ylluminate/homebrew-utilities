@@ -1,0 +1,12 @@
+{
+  "project": "/Users/u/tank/ventures/utilities/homebrew-utilities",
+  "version": "4.8.0",
+  "timestamp": "2026-03-02T07:31:11.821Z",
+  "graph_hash": "f5bb008b1b564071dd97c6e8b5148c7c",
+  "node_count": 21,
+  "edge_count": 0,
+  "resolved_pct": 0.00,
+  "contracts": ["schema_dispatch", "hook_permissions", "migration_registration", "file_references", "module_interface", "import_resolution", "duplicate_definition", "orphan_definitions", "shell_scripts_executable", "broken_references", "symlink_chain", "hook_protocol", "test_file_conventions", "expected_directories", "project_hygiene", "fix_thrash", "change_test_coupling", "config_audit", "doc_code_references", "prose_term_consistency", "citation_resolution", "vision_drift", "feature_group_duplication", "Docker needs .dockerignore", "package.json needs lockfile", ".env.example needs .gitignore entry"],
+  "violations": {"critical": 0, "warning": 0, "info": 6, "total": 6},
+  "health": 100
+}
