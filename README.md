@@ -1,6 +1,6 @@
 # Homebrew Utilities
 
-Custom [Homebrew](https://brew.sh) formulas for tools that need patches or builds unavailable in homebrew-core.
+Custom [Homebrew](https://brew.sh) formulas and casks for tools that need patches, custom builds, or release tracking unavailable in homebrew-core.
 
 ## Usage
 
@@ -40,3 +40,17 @@ Upgrade when upstream has new commits:
 ```bash
 brew upgrade --fetch-HEAD ylluminate/utilities/proxychains-ng
 ```
+
+## Casks
+
+| Cask | Description |
+|------|-------------|
+| [recordly](Casks/recordly.rb) | Screen and audio recorder — always tracks the latest upstream release |
+
+### recordly
+
+```bash
+brew install --cask ylluminate/utilities/recordly
+```
+
+Pulls the most recent [Recordly](https://github.com/webadderall/Recordly) release on install, independent of architecture (arm64 or x86_64). The app's built-in updater handles ongoing updates, so the cask never needs version bumps.
