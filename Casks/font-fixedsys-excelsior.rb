@@ -6,6 +6,9 @@ cask "font-fixedsys-excelsior" do
   name "Fixedsys Excelsior"
   homepage "https://github.com/kika/fixedsys"
 
+  # Same font family as the -alt cask (only ligatures differ) — cannot coexist.
+  conflicts_with cask: "ylluminate/utilities/font-fixedsys-excelsior-alt"
+
   livecheck do
     url :url
     strategy :github_latest

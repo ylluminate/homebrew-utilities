@@ -47,6 +47,7 @@ brew upgrade --fetch-HEAD ylluminate/utilities/proxychains-ng
 |------|-------------|
 | [recordly](Casks/recordly.rb) | Screen and audio recorder — always tracks the latest upstream release |
 | [font-fixedsys-excelsior](Casks/font-fixedsys-excelsior.rb) | Fixedsys Excelsior font with programming ligatures — not carried by homebrew-cask |
+| [font-fixedsys-excelsior-alt](Casks/font-fixedsys-excelsior-alt.rb) | Same font, alternate ligatures (`<=` instead of `=<`) — mutually exclusive with the above |
 
 ### recordly
 
@@ -63,3 +64,10 @@ brew install --cask ylluminate/utilities/font-fixedsys-excelsior
 ```
 
 Installs [Fixedsys Excelsior](https://github.com/kika/fixedsys) (`FSEX302.ttf`) to `~/Library/Fonts` — a revival of the classic Fixedsys with programming ligatures. Not available in homebrew-cask. After installing, select "Fixedsys Excelsior" in your terminal or editor font settings.
+
+The `-alt` cask installs the alternate build (`FSEX302-alt.ttf`), which ligates `<=` into ≤ (the common programmer form) instead of `=<`. Both share the internal family name "Fixedsys Excelsior", so only one can be installed at a time (`conflicts_with` enforces this). To switch:
+
+```bash
+brew uninstall --cask font-fixedsys-excelsior
+brew install --cask ylluminate/utilities/font-fixedsys-excelsior-alt
+```
