@@ -46,6 +46,7 @@ brew upgrade --fetch-HEAD ylluminate/utilities/proxychains-ng
 | Cask | Description |
 |------|-------------|
 | [recordly](Casks/recordly.rb) | Screen and audio recorder — always tracks the latest upstream release |
+| [font-fixedsys-excelsior](Casks/font-fixedsys-excelsior.rb) | Fixedsys Excelsior font with programming ligatures — not carried by homebrew-cask |
 
 ### recordly
 
@@ -54,3 +55,11 @@ brew install --cask ylluminate/utilities/recordly
 ```
 
 Pulls the most recent [Recordly](https://github.com/webadderall/Recordly) release on install, independent of architecture (arm64 or x86_64). The app's built-in updater handles ongoing updates, so the cask never needs version bumps.
+
+### font-fixedsys-excelsior
+
+```bash
+brew install --cask ylluminate/utilities/font-fixedsys-excelsior
+```
+
+Installs [Fixedsys Excelsior](https://github.com/kika/fixedsys) (`FSEX302.ttf`) to `~/Library/Fonts` — a revival of the classic Fixedsys with programming ligatures. Not available in homebrew-cask. After installing, select "Fixedsys Excelsior" in your terminal or editor font settings.
