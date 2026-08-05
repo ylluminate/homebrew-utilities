@@ -12,3 +12,7 @@
 # gg project marker
 .gg/
 .notes/
+
+# UCE derived artifacts. ~/.gitignore covers .uce-cache.json but not the
+# .quarantine sidecar UCE writes when it rebuilds a suspicious cache.
+.uce-cache.json*

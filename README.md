@@ -12,8 +12,37 @@ brew tap ylluminate/utilities
 
 | Formula | Description | Why not homebrew-core? |
 |---------|-------------|----------------------|
+| [meat](Formula/meat.rb) | Abridge a code diff into a "reading diff" using an LLM | Not packaged anywhere; upstream ships only `go install` |
 | [plocate](Formula/plocate.rb) | Fast file search using posting lists and trigram indexing | macOS port not upstream |
 | [proxychains-ng](Formula/proxychains-ng.rb) | SOCKS5/HTTP hook preloader with arm64e support | homebrew-core builds arm64 only; systems with `-arm64e_preview_abi` need arm64e slices |
+
+### meat
+
+```bash
+brew install --HEAD ylluminate/utilities/meat
+export OPENAI_API_KEY=...        # or ANTHROPIC_API_KEY
+meat                             # abridge the latest commit
+git diff main...HEAD | meat      # or a diff on stdin
+```
+
+[meat](https://github.com/boldsoftware/meat) uses a model to reduce a diff to the
+parts a reviewer actually needs to read. Upstream documents `go install
+meat.dev/cmd/meat@latest` as the only install path, which leaves the binary
+outside Homebrew's management; this formula brings it under `brew` instead.
+
+Upstream publishes no tags and no releases — `main` is the only ref — so the
+formula is HEAD-only and tracks that branch:
+
+```bash
+brew upgrade --fetch-HEAD ylluminate/utilities/meat
+```
+
+`--fetch-HEAD` is required: without it Homebrew only re-checks a HEAD
+installation when a stable release appears, and meat has none. Set
+`fetch_head = true` under `[brew]` in `topgrade.toml` to get this automatically.
+
+The build has no external Go dependencies (there is no `go.sum`), so it compiles
+offline in a couple of seconds.
 
 ### plocate
 
