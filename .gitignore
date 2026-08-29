@@ -16,3 +16,27 @@
 # UCE derived artifacts. ~/.gitignore covers .uce-cache.json but not the
 # .quarantine sidecar UCE writes when it rebuilds a suspicious cache.
 .uce-cache.json*
+
+# Dynamic context (auto-generated at session start)
+AGENTS.local.md
+.ai/context/
+
+# AI / agent tooling state. ~/.gitignore already covers these, but that file is
+# machine-local and this tap is public: on any clone without it, `git add -A`
+# would sweep .ai/memory/project.db and the 0600 AGENTS.local.md into a public
+# repo. Repeated here so the repo defends itself.
+.ai/
+.claude/
+.codex/
+.gemini/
+.uce/
+.uce.yaml
+.uce-cert.json
+.uce-status
+.uce-cache-stats.json
+thoughts/
+
+# Homebrew build artifacts. `brew bottle` / `brew test-bot` write these into the
+# tap working directory (see the CI TODO in .notes/LEDGER.md).
+*.bottle.tar.gz
+*.bottle*.json
