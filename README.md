@@ -70,6 +70,26 @@ Upgrade when upstream has new commits:
 brew upgrade --fetch-HEAD ylluminate/utilities/proxychains-ng
 ```
 
+## Evaluated and not adopted
+
+This tap is for tools that need patches, custom builds, or release tracking unavailable in
+homebrew-core. Things that merely lost their core formula do **not** qualify if a maintained
+equivalent exists. Recorded so the question is not re-litigated:
+
+| Dropped from core | Why not adopted here | Use instead |
+|---|---|---|
+| neofetch 7.1.0 (`repo_archived`) | canonical successor is maintained and in core | `fastfetch` |
+| pfetch 0.6.0 (`repo_archived`) | maintained Rust rewrite, same command name | `pfetch-rs` |
+| jam 2.6.1 (`unmaintained`) | `argyll-cms` already ships the byte-identical Jam 2.6.1, and `/opt/homebrew/bin/jam` already pointed at it | `argyll-cms` (or `bjam` for Boost.Build) |
+
+Adopt only when all three hold: the tool is actually used; no maintained formula provides the same
+capability, including under another name or bundled inside another formula; and upstream still
+exists or we are prepared to carry the source.
+
+A deprecated formula that still installs is not an orphan yet. The real signal is `brew formula
+<name>` resolving to `$(brew --prefix)/opt/<name>/.brew/<name>.rb` instead of somewhere under
+`Library/Taps/` — at that point only the keg-local copy is left and it can never update again.
+
 ## Casks
 
 | Cask | Description |
