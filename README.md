@@ -97,6 +97,7 @@ A deprecated formula that still installs is not an orphan yet. The real signal i
 | [recordly](Casks/recordly.rb) | Screen and audio recorder — always tracks the latest upstream release |
 | [font-fixedsys-excelsior](Casks/font-fixedsys-excelsior.rb) | Fixedsys Excelsior font with programming ligatures — not carried by homebrew-cask |
 | [font-fixedsys-excelsior-alt](Casks/font-fixedsys-excelsior-alt.rb) | Same font, alternate ligatures (`<=` instead of `=<`) — mutually exclusive with the above |
+| [webtorrent-arm64](Casks/webtorrent-arm64.rb) | WebTorrent Desktop built native for Apple Silicon — homebrew-cask ships x86_64 only |
 
 ### recordly
 
@@ -120,3 +121,23 @@ The `-alt` cask installs the alternate build (`FSEX302-alt.ttf`), which ligates 
 brew uninstall --cask font-fixedsys-excelsior
 brew install --cask ylluminate/utilities/font-fixedsys-excelsior-alt
 ```
+
+### webtorrent-arm64
+
+```bash
+brew uninstall --cask webtorrent   # if the homebrew-cask build is installed
+brew install --cask ylluminate/utilities/webtorrent-arm64
+```
+
+The homebrew-cask [`webtorrent`](https://github.com/Homebrew/homebrew-cask/blob/HEAD/Casks/w/webtorrent.rb) cask ships an x86_64-only build and ends with `requires_rosetta`. This cask installs [gingergeek8192/webtorrent-desktop](https://github.com/gingergeek8192/webtorrent-desktop) instead — a packaging-only fork of [webtorrent/webtorrent-desktop](https://github.com/webtorrent/webtorrent-desktop) whose release is built for `arm64`, so it runs natively on Apple Silicon with no translation.
+
+Verified in the shipped bundle rather than taken from the README: both `WebTorrent.app/Contents/MacOS/WebTorrent` and the embedded Electron Framework report `arm64` under `lipo -archs`, `CFBundleShortVersionString` is `0.24.0`, and `LSMinimumSystemVersion` is `12.0` (hence `depends_on macos: :monterey`).
+
+Two things to know before installing:
+
+- **The build is unofficial and ad-hoc signed** — no Developer ID, no notarization, `TeamIdentifier=not set`. Where Gatekeeper is enabled macOS blocks the first launch; approve it under System Settings → Privacy & Security, or add `--no-quarantine`. The binary cannot be verified against the fork's source.
+- **It carries a newer Electron than the official build** — 39.x versus 27.x in the official 0.24.0 — so its bundled Chromium is substantially more current.
+
+The fork's single release is tagged `v0.25.0-arm64` while the app and its dmg are `0.24.0`, so the cask carries both: `version.csv.first` is the app version and `version.csv.second` is the release tag. `brew livecheck` is wired to read a newer tag and dmg pair out of the releases API if one appears.
+
+Because the fork changes only packaging (6 commits touching `package.json`, lockfiles and `bin/package.js` — no application source), building the same artifact from a fork we control is a straightforward way to remove the provenance gap.
