@@ -70,6 +70,17 @@ Upgrade when upstream has new commits:
 brew upgrade --fetch-HEAD ylluminate/utilities/proxychains-ng
 ```
 
+## How updates work
+
+| Recipes | How the tap stays current | How your Mac picks it up |
+|---|---|---|
+| Versioned casks: macapk, recordly, webtorrent-arm64, both fonts | [`autobump`](.github/workflows/autobump.yml) runs daily: `brew livecheck` finds newer releases, `brew bump-cask-pr --write-only` rewrites version and sha256, and a cask is committed only if `brew style` and `brew audit --strict --online` then pass | `brew update && brew upgrade --cask` (topgrade does both) |
+| HEAD-only formulae: meat, plocate, proxychains-ng | Nothing to bump: upstreams ship no releases (meat, plocate) or the recipe deliberately tracks `master` (proxychains-ng) | `brew upgrade --fetch-HEAD` (topgrade with `fetch_head = true`) |
+
+Every push and pull request also runs [`tests`](.github/workflows/tests.yml) — Homebrew's own `brew test-bot --only-tap-syntax` (style, readall, audit).
+
+A failed bump is reverted rather than pushed, and fails the run so it shows up as a failed workflow.
+
 ## Evaluated and not adopted
 
 This tap is for tools that need patches, custom builds, or release tracking unavailable in
@@ -94,10 +105,34 @@ A deprecated formula that still installs is not an orphan yet. The real signal i
 
 | Cask | Description |
 |------|-------------|
-| [recordly](Casks/recordly.rb) | Screen and audio recorder — always tracks the latest upstream release |
+| [macapk](Casks/macapk.rb) | Mac.apk — run Android apps natively on Apple Silicon, no emulator or VM |
+| [recordly](Casks/recordly.rb) | Screen and audio recorder, per-arch checksums, self-updating |
 | [font-fixedsys-excelsior](Casks/font-fixedsys-excelsior.rb) | Fixedsys Excelsior font with programming ligatures — not carried by homebrew-cask |
 | [font-fixedsys-excelsior-alt](Casks/font-fixedsys-excelsior-alt.rb) | Same font, alternate ligatures (`<=` instead of `=<`) — mutually exclusive with the above |
 | [webtorrent-arm64](Casks/webtorrent-arm64.rb) | WebTorrent Desktop built native for Apple Silicon — homebrew-cask ships x86_64 only |
+
+### macapk
+
+```bash
+brew install --cask ylluminate/utilities/macapk
+```
+
+[Mac.apk](https://github.com/kksimp/Mac.apk) runs Android apps on Apple Silicon without an emulator or virtual machine: it reimplements the Android application environment on macOS, so each app is an ordinary Mac process with its own window and Dock icon. Alpha, AGPL-3.0, Developer ID signed and notarized (verified with `spctl`: `source=Notarized Developer ID`). Requires macOS 26.4 or later.
+
+After first launch, click **Install** next to **Runtime:** in the Mac.apk window. Android apps you install become their own `.app` bundles; remove them from the Mac.apk window so their data goes too. `brew uninstall --zap` deletes `~/Library/Application Support/MacApk`, which holds every Android app's data.
+
+Mac.apk does not update itself and ships a new build about daily, so this cask is pinned and bumped by [autobump](#how-updates-work).
+
+Compared before adopting (2026-10-20):
+
+| | Mac.apk | [Mac Android Subsystem](https://github.com/harkhowalia-1/MacSubsystemForAndroid) | BlueStacks / MuMu Pro | Genymotion |
+|---|---|---|---|---|
+| Approach | Android framework reimplemented, no VM | LineageOS in a QEMU/Hypervisor VM | emulator | emulator, x86_64 + Rosetta |
+| Signing | notarized Developer ID | ad-hoc, not notarized | vendor-signed | vendor-signed |
+| Google services | own Play Services: sign-in, licence checks | none | yes | optional |
+| In homebrew-cask | no | no | yes | yes |
+
+MAS's one advantage is compatibility: it runs real Android 16, so an app Mac.apk does not yet handle may work there. For everything else Mac.apk is the better fit.
 
 ### recordly
 
@@ -105,7 +140,9 @@ A deprecated formula that still installs is not an orphan yet. The real signal i
 brew install --cask ylluminate/utilities/recordly
 ```
 
-Pulls the most recent [Recordly](https://github.com/webadderall/Recordly) release on install, independent of architecture (arm64 or x86_64). The app's built-in updater handles ongoing updates, so the cask never needs version bumps.
+Installs [Recordly](https://github.com/webadderall/Recordly) for the current architecture (`arm64` or `x64`), each with its own verified sha256. The app updates itself (Electron + Squirrel), and the cask is kept current by the [autobump](#how-updates-work) workflow, so a fresh install always gets the latest build.
+
+This cask used to be `version :latest` with `sha256 :no_check`. That skipped checksum verification entirely, and under `brew upgrade --greedy` (topgrade's `greedy_cask`) a `:latest` cask counts as outdated on every run. Its `zap` also named the wrong bundle id (`com.webadderall.Recordly`); the shipped app is `dev.recordly.app`.
 
 ### font-fixedsys-excelsior
 

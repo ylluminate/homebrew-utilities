@@ -1,0 +1,102 @@
+name: autobump
+
+# Keep every versioned cask in this tap at its upstream's latest release.
+#
+#   livecheck --newer-only  ->  bump-cask-pr --write-only (version + sha256)
+#   -> brew style + brew audit --strict --online  ->  commit, one per cask
+#
+# A cask that fails style or audit after its bump is reverted, never pushed,
+# and fails the run so the failure reaches George by email.
+#
+# Commits straight to main rather than opening PRs (Homebrew's tap-new
+# template opens PRs): casks have no bottles for a PR build to produce, the
+# audit below is the gate, and a PR nobody merges is not an update.
+#
+# HEAD-only formulae (meat, plocate, proxychains-ng) have no version to bump;
+# they update on the machine via `brew upgrade --fetch-HEAD`.
+
+on:
+  schedule:
+    - cron: "41 9 * * *" # daily 09:41 UTC; macapk ships roughly daily
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths: [.github/workflows/autobump.yml]
+
+permissions: {}
+
+concurrency:
+  group: autobump
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash -xeuo pipefail {0}
+
+jobs:
+  autobump:
+    runs-on: macos-26
+    permissions:
+      contents: write
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
+      HOMEBREW_NO_ENV_HINTS: "1"
+      HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@eb02c69dbabdb66ff183c614f4ce7ab3c077592c # 2026.10.12.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Find outdated casks
+        id: find
+        env:
+          TAP_NAME: ${{ steps.set-up-homebrew.outputs.tap-name }}
+        run: |
+          # livecheck exits non-zero if any single check errors; keep the rest.
+          brew livecheck --tap "$TAP_NAME" --casks --newer-only --json --quiet \
+            > "$RUNNER_TEMP/livecheck.json" || true
+          jq -r '.[] | select(.version.outdated == true)
+                     | [.cask, .version.current, .version.latest] | @tsv' \
+            "$RUNNER_TEMP/livecheck.json" > "$RUNNER_TEMP/outdated.tsv"
+          cat "$RUNNER_TEMP/outdated.tsv"
+          echo "count=$(wc -l < "$RUNNER_TEMP/outdated.tsv" | tr -d ' ')" >> "$GITHUB_OUTPUT"
+
+      - name: Bump, verify and push
+        if: steps.find.outputs.count != '0'
+        env:
+          TAP_NAME: ${{ steps.set-up-homebrew.outputs.tap-name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tap_dir="$(brew --repository "$TAP_NAME")"
+          git -C "$tap_dir" config user.name "utilities-autobump[bot]"
+          git -C "$tap_dir" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          start="$(git -C "$tap_dir" rev-parse HEAD)"
+          failed=()
+          while IFS=$'\t' read -r token current latest; do
+            file="Casks/${token}.rb"
+            if brew bump-cask-pr --write-only --no-audit --no-style \
+                 --version "$latest" "$TAP_NAME/$token" &&
+               brew style "$TAP_NAME/$token" &&
+               brew audit --cask --strict --online "$TAP_NAME/$token"; then
+              git -C "$tap_dir" add "$file"
+              git -C "$tap_dir" commit -m "$token $current -> $latest"
+            else
+              git -C "$tap_dir" checkout -- "$file"
+              failed+=("$token $current -> $latest")
+            fi
+          done < "$RUNNER_TEMP/outdated.tsv"
+
+          if [ "$(git -C "$tap_dir" rev-parse HEAD)" != "$start" ]; then
+            git -C "$tap_dir" remote set-url origin \
+              "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+            git -C "$tap_dir" push origin HEAD:main
+          fi
+
+          if [ "${#failed[@]}" -gt 0 ]; then
+            printf '::error::bump failed style/audit and was not pushed: %s\n' "${failed[@]}"
+            exit 1
+          fi

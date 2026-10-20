@@ -1,0 +1,39 @@
+name: tests
+
+# Homebrew's tap-new test workflow, narrowed to macOS: every recipe here is
+# macOS-only (depends_on :macos / arch: :arm64), so the Linux leg would only
+# report false failures. tap-syntax runs style, readall and audit on the tap.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash -xeuo pipefail {0}
+
+jobs:
+  test-bot:
+    runs-on: macos-26
+    permissions:
+      contents: read
+    steps:
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@eb02c69dbabdb66ff183c614f4ce7ab3c077592c # 2026.10.12.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache Homebrew Bundler RubyGems
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.set-up-homebrew.outputs.gems-path }}
+          key: macos-26-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
+          restore-keys: macos-26-rubygems-
+
+      - run: brew test-bot --only-cleanup-before
+      - run: brew test-bot --only-setup
+      - run: brew test-bot --only-tap-syntax
