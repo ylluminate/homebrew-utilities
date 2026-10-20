@@ -7,8 +7,8 @@ class Plocate < Formula
   depends_on "meson" => :build
   depends_on "ninja" => :build
   depends_on "pkg-config" => :build
-  depends_on "zstd"
   depends_on :macos
+  depends_on "zstd"
 
   def install
     args = %W[
@@ -86,7 +86,7 @@ class Plocate < Formula
 
     system sbin/"updatedb", "-U", testpath/"test_dir",
            "-o", testpath/"test.db", "--require-visibility", "no"
-    assert_predicate testpath/"test.db", :exist?
+    assert_path_exists testpath/"test.db"
     assert_match "hello.txt", shell_output("#{bin}/plocate -d #{testpath}/test.db hello")
   end
 end

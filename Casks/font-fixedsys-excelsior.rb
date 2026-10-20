@@ -4,15 +4,16 @@ cask "font-fixedsys-excelsior" do
 
   url "https://github.com/kika/fixedsys/releases/download/v#{version}/FSEX302.ttf"
   name "Fixedsys Excelsior"
+  desc "Revival of the Fixedsys bitmap font with programming ligatures"
   homepage "https://github.com/kika/fixedsys"
-
-  # Same font family as the -alt cask (only ligatures differ) — cannot coexist.
-  conflicts_with cask: "ylluminate/utilities/font-fixedsys-excelsior-alt"
 
   livecheck do
     url :url
     strategy :github_latest
   end
+
+  # Same font family as the -alt cask (only ligatures differ) — cannot coexist.
+  conflicts_with cask: "ylluminate/utilities/font-fixedsys-excelsior-alt"
 
   font "FSEX302.ttf"
 end
